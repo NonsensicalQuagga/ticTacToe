@@ -1,14 +1,16 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferStrategy;
 
-public class TicTacToe extends Canvas implements Runnable{
-    private BufferStrategy bs;
-    private boolean running = false;
-    private Thread thread;
-    public int width = 650;
+public class TicTacToe extends Canvas{
 
+    public int[] crossX;
+    public int[] crossY;
+    public int[] circleX;
+    public int[] circleY;
+
+
+    public int width = 570;
     public TicTacToe() {
         setSize(width,width);
         JFrame frame = new JFrame();
@@ -22,19 +24,11 @@ public class TicTacToe extends Canvas implements Runnable{
         frame.setVisible(true);
     }
 
-    public void render() {
-        bs = getBufferStrategy();
-        if (bs == null) {
-            createBufferStrategy(3);
-            return;
-        }
-        Graphics g = bs.getDrawGraphics();
-
-        // Rita ut den nya bilden
+    public void paint(Graphics g) {
         draw(g);
+        drawX(crossX, crossY, width, g);
+        repaint();
 
-        g.dispose();
-        bs.show();
     }
 
     public void draw(Graphics g) {
@@ -44,59 +38,39 @@ public class TicTacToe extends Canvas implements Runnable{
         int y = 0;
         int x = 0;
         for (;true;){
-            g.fillPolygon(new int[] {x*width/13 *4, (x+1)*width/13 * 4, (x+1)*width/13 * 4, x*width/13 * 4 + width/13, x*width/13 * 4 + width/13, x*width/13 * 4, x*width/13 * 4}, new int[] {y*width/13 * 4, y*width/13 * 4, y*width/13 * 4 + width/13, y*width/13 * 4 + width/13, y*width/13 * 4 + width/13 *4, y*width/13 * 4 + width/13 *4, y*width/13 * 4 },  7);
+        //    g.fillPolygon(new int[] {x*width/13 *4, (x+1)*width/13 * 4, (x+1)*width/13 * 4, x*width/13 * 4 + width/13, x*width/13 * 4 + width/13, x*width/13 * 4, x*width/13 * 4}, new int[] {y*width/13 * 4, y*width/13 * 4, y*width/13 * 4 + width/13, y*width/13 * 4 + width/13, y*width/13 * 4 + width/13 * 4, y*width/13 * 4 + width/13 * 4, y*width/13 * 4},  7);
+            g.fillPolygon(new int[] {x*width/19 *6, (x+1)*width/19 * 6, (x+1)*width/19 * 6, x*width/19 * 6 + width/19, x*width/19 * 6 + width/19, x*width/19 * 6, x*width/19 * 6}, new int[] {y*width/19 * 6, y*width/19 * 6, y*width/19 * 6 + width/19, y*width/19 * 6 + width/19, y*width/19 * 6 + width/19 * 6, y*width/19 * 6 + width/19 * 6, y*width/19 * 6}, 7);
             x++;
             if (y == 4)break;
             else if (x == 4){
                 x = 0;
                 y++;
             }
-
         }
+    //    x=7;
+    //    y=1;
+    //    g.setColor(Color.red);
+    //    g.fillPolygon(new int[] {x*width/19 , x*width/19 + width/38, (x+5)*width/19, (x+4)*width/19 + width/38, x*width/19}, new int[] {y*width/19 + width/38, y*width/19, (y+4)*width/19 + width/38, (y+5)*width/19, y*width/19 + width/38}, 5);
+    //    g.fillPolygon(new int[] {x*width/19 , x*width/19 + width/38, (x+5)*width/19, (x+4)*width/19 + width/38, x*width/19}, new  int[] {(y+4)*width/19 + width/38, (y+5)*width/19, y*width/19 + width/38, y*width/19, (y+4)*width/19 + width/38}, 5 );
     }
 
-    private void update() {
+    public static boolean drawX(int[] x, int[] y,  int width, Graphics g){
+        g.setColor(Color.red);
+        for (int i = 0; i < 5; i++) {
+            try{
+            g.fillPolygon(new int[]{x[i] * width / 19, x[i] * width / 19 + width / 38, (x[i] + 5) * width / 19, (x[i] + 4) * width / 19 + width / 38, x[i] * width / 19}, new int[]{y[i] * width / 19 + width / 38, y[i] * width / 19, (y[i] + 4) * width / 19 + width / 38, (y[i] + 5) * width / 19, y[i] * width / 19 + width / 38}, 5);
+            g.fillPolygon(new int[]{x[i] * width / 19, x[i] * width / 19 + width / 38, (x[i] + 5) * width / 19, (x[i] + 4) * width / 19 + width / 38, x[i] * width / 19}, new int[]{(y[i] + 4) * width / 19 + width / 38, (y[i] + 5) * width / 19, y[i] * width / 19 + width / 38, y[i] * width / 19, (y[i] + 4) * width / 19 + width / 38}, 5);
+        } catch (Exception e){
+              break;
+            }
+
+        }
+        return true;
     }
 
     public static void main(String[] args) {
         TicTacToe minGrafik = new TicTacToe();
-        minGrafik.start();
-    }
 
-    public synchronized void start() {
-        running = true;
-        thread = new Thread(this);
-        thread.start();
-    }
-
-    public synchronized void stop() {
-        running = false;
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void run() {
-        double ns = 1000000000.0 / 25.0;
-        double delta = 0;
-        long lastTime = System.nanoTime();
-
-        while (running) {
-            long now = System.nanoTime();
-            delta += (now - lastTime) / ns;
-            lastTime = now;
-
-            while(delta >= 1) {
-                // Uppdatera koordinaterna
-                update();
-                // Rita ut bilden med updaterad data
-                render();
-                delta--;
-            }
-        }
-        stop();
     }
 
     public class MyMouseMotionListener implements MouseMotionListener {
